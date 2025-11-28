@@ -26,6 +26,9 @@
 // Initializes spindle pins and hardware PWM, if enabled.
 void spindle_init();
 
+// added soft_start functionality
+void spindle_soft_start(uint8_t target_pwm);
+
 // Sets spindle direction and spindle rpm via PWM, if enabled.
 void spindle_run(uint8_t direction, float rpm);
 
