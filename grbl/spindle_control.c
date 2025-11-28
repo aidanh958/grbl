@@ -65,6 +65,27 @@ void spindle_stop()
 }
 
 
+
+void spindle_soft_start(uint8_t target_pwm)
+{
+    uint8_t current = 0;
+
+    // Start at 0% duty
+    OCR_REGISTER = 0;
+
+    // Ramp to target value
+    while (current < target_pwm) {
+        current++;
+        OCR_REGISTER = current;
+        #ifndef SPINDLE_SOFT_RAMP_SPEED
+          _delay_ms(5); 
+        #else
+          _delay_ms(SPINDLE_SOFT_RAMP_SPEED);
+        #endif
+    }
+}
+
+
 void spindle_set_state(uint8_t state, float rpm)
 {
   // Halt or set spindle direction and rpm. 
@@ -107,8 +128,16 @@ void spindle_set_state(uint8_t state, float rpm)
         #ifdef MINIMUM_SPINDLE_PWM
           if (current_pwm < MINIMUM_SPINDLE_PWM) { current_pwm = MINIMUM_SPINDLE_PWM; }
         #endif
+        
+        
         OCR_REGISTER = current_pwm; // Set PWM pin output
-    
+
+        planner_synchronize();            // wait for current motions to finish
+        spindle_soft_start(current_pwm);  // ramp to speed
+        
+
+
+        
         // On the Uno, spindle enable and PWM are shared, unless otherwise specified.
         #if defined(CPU_MAP_ATMEGA2560) || defined(USE_SPINDLE_DIR_AS_ENABLE_PIN) 
           #ifdef INVERT_SPINDLE_ENABLE_PIN
