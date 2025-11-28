@@ -132,7 +132,7 @@ void spindle_set_state(uint8_t state, float rpm)
         
         OCR_REGISTER = current_pwm; // Set PWM pin output
 
-        planner_synchronize();            // wait for current motions to finish
+        protocol_buffer_synchronize();    // wait for current motions to finish
         spindle_soft_start(current_pwm);  // ramp to speed
         
 
